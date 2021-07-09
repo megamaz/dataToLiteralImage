@@ -138,4 +138,4 @@ if __name__ == "__main__":
     
     if args.fromimage:
         out = None if not args.filename else args.filename
-        fromImage(args.imagename, out, args.compress)
+        fromImage(args.fromimage, out, args.compress)
