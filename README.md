@@ -34,12 +34,12 @@ Will convert an image to a file.
 ### --filename
 Usage:
 ```
-python --fromiamge ./path/to/image --filename FromImageMagic.filetype
+python ./main.py --fromimage ./path/to/image --filename FromImageMagic.filetype
 ```
 Will overwrite the saved filename and save it as `FromImageMagic.filetype`.
 ### --compress
 Usage:
 ```
-python --toimage ./path/to/file --compress
+python ./main.py --toimage ./path/to/file --compress
 ```
 Will skip the conversion to zip format before converting to an image. (This will lead to bigger images and generally will take more space than the original file.)
