@@ -2,7 +2,7 @@ import os, zipfile, math, argparse
 from PIL import Image
 
 markers = {
-    "NAMEEND":[0, 0, 255],
+    "NAMEEND":[0, 0, 0, 255],
     "TERMINATOR":[84, 69, 82, 77, 73, 78, 65, 84, 79, 82, 0, 0]
 }
 
@@ -17,26 +17,26 @@ def toImage(filetoimage, output="data.png", compress=True):
 
     with open(imageDataFileName, 'rb') as rb:
         filenameToPixelList = [ord(l) for l in filetoimage]
-        if len(filenameToPixelList)%3 != 0:
-            filenameToPixelList += [0,]*(3-(len(filenameToPixelList)%3))
+        if len(filenameToPixelList)%4 != 0:
+            filenameToPixelList += [0,]*(4-(len(filenameToPixelList)%4))
 
         byteData = [x for x in rb.read()]
-        if len(byteData+filenameToPixelList)%3 != 0:
-            byteData += [0,]*(3-(len(byteData)%3))
+        if len(byteData+filenameToPixelList)%4 != 0:
+            byteData += [0,]*(4-(len(byteData)%4))
 
         data = filenameToPixelList + markers["NAMEEND"] + byteData + markers["TERMINATOR"]
         pixels = []
         currentPix = []
         for x in range(len(data)):
             currentPix.append(data[x])
-            if (x+1)%3 == 0:
-                currentPix = (currentPix[0], currentPix[1], currentPix[2])
+            if (x+1)%4 == 0:
+                currentPix = (currentPix[0], currentPix[1], currentPix[2], currentPix[3])
                 pixels.append(currentPix)
                 currentPix = []
         
         xSize = int(math.sqrt(len(pixels))+1)
         ySize = int(math.sqrt(len(pixels))+1)
-        img = Image.new("RGB", (xSize, ySize))
+        img = Image.new("RGBA", (xSize, ySize))
         try:
             for y in range(ySize):
                 for x in range(xSize):
@@ -68,24 +68,25 @@ def fromImage(imageToFile, overWriteOutputNameto=None, fromcompressed=True):
             pixelDataStartIndex = d+1
             break
 
-        filename += chr(data[d][0]) + chr(data[d][1]) + chr(data[d][2])
+        filename += chr(data[d][0]) + chr(data[d][1]) + chr(data[d][2]) +chr(data[d][3])
 
     filename = ''.join([x for x in filename if x != chr(0)])
     
 
     with open("temp_from.zip", 'wb') as wb:
         for i in range(pixelDataStartIndex, len(data)):
-            if [*data[i]] + [*data[i+1]] + [*data[i+2]] + [*data[i+3]] == markers["TERMINATOR"]:
+            if [*data[i]] + [*data[i+1]] + [*data[i+2]] + [*data[i+3]] + [*data[i+4]] == markers["TERMINATOR"]:
                 break
             wb.write(data[i][0].to_bytes(1, "big"))
             wb.write(data[i][1].to_bytes(1, "big"))
             wb.write(data[i][2].to_bytes(1, "big"))
+            wb.write(data[i][3].to_bytes(1, "big"))
 
         wb.close()
 
     currentZipFileData = open("temp_from.zip", 'rb').read()
-    if currentZipFileData[-3:] == markers["TERMINATOR"][:3]:
-        newByteData = [x for x in open("temp_from.zip", 'rb').read()][:-3]
+    if currentZipFileData[-4:] == markers["TERMINATOR"][:4]:
+        newByteData = [x for x in open("temp_from.zip", 'rb').read()][:-4]
         
         with open("temp_from.zip", 'wb') as fixErrors:
             for b in newByteData:
